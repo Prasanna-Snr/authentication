@@ -1,0 +1,133 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #e0f7fa;
+    margin: 0;
+}
+
+.container {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    width: 90%;
+    max-width: 1000px;
+    margin: 4rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.signup-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.signup-form h1 {
+    margin-bottom: 2rem;
+}
+
+.signup-form .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.signup-form .form-row > div {
+    flex: 1 1 calc(50% - 1rem);
+    min-width: 200px;
+}
+
+.signup-form .form-row.full-width > div {
+    flex: 1 1 100%;
+}
+
+.signup-form .gender-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.signup-form .gender-row div {
+    flex: 1;
+    min-width: 200px;
+}
+
+.signup-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.signup-form input[type="text"],
+.signup-form input[type="date"],
+.signup-form input[type="email"],
+.signup-form input[type="password"] {
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.signup-form fieldset {
+    border: none;
+    margin-bottom: 1rem;
+    padding: 0;
+}
+
+.signup-form legend {
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.signup-form button {
+    background: #20c997;
+    color: #fff;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.signup-form button:hover {
+    background: #1e8e8d;
+}
+
+.signup-form .login-link {
+    margin-top: 1rem;
+    text-align: center;
+    color: #555;
+}
+
+.signup-form .login-link a {
+    color: #20c997;
+    text-decoration: none;
+}
+
+.signup-form .login-link a:hover {
+    text-decoration: underline;
+}
