@@ -1,6 +1,5 @@
 <?php
-session_start(); // Start the session to use session variables
-
+session_start();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve form data
     $email = $_POST['email'];
@@ -14,40 +13,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die('Connection Failed: ' . $conn->connect_error);
     }
 
-    // Prepare and execute query to check if email exists
-    $stmt = $conn->prepare("SELECT password FROM user WHERE email = ?");
+    // Check if email and password are correct
+    $stmt = $conn->prepare("SELECT id, password FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->store_result();
+    $stmt->bind_result($user_id, $hashed_password);
+    $stmt->fetch();
 
-    if ($stmt->num_rows > 0) {
-        // Email exists, fetch hashed password
-        $stmt->bind_result($hashed_password);
-        $stmt->fetch();
+    // Close the statement
+    $stmt->close();
 
-        // Verify password
-        if (password_verify($password, $hashed_password)) {
-            // Password is correct, start session and redirect to dashboard.php
-            $_SESSION['email'] = $email; // Store email in session
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            // Password is incorrect
-            $error = "Incorrect email or password.";
-        }
+    if (password_verify($password, $hashed_password)) {
+        // Password is correct, generate OTP
+        $otp = rand(100000, 999999); // 6-digit OTP
+        $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes')); // Set expiration time to 2 minutes
+
+        // Store OTP and expiration in database
+        $stmt = $conn->prepare("UPDATE user SET otp = ?, otp_expiration = ? WHERE id = ?");
+        $stmt->bind_param("isi", $otp, $otp_expiration, $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        // Send OTP via email
+        $to = $email;
+        $subject = "Your OTP Code";
+        $message = "Your OTP code is $otp. It will expire in 2 minutes.";
+        $headers = "From: no-reply@example.com";
+
+        mail($to, $subject, $message, $headers);
+
+        // Store email in session for verification
+        $_SESSION['email'] = $email;
+
+        // Redirect to OTP verification page
+        header("Location: verify_otp.php");
+        exit();
     } else {
-        // Email does not exist
-        $error = "Incorrect email or password.";
+        echo "Invalid email or password.";
     }
 
-    $stmt->close();
     $conn->close();
-} else {
-    echo "Invalid request.";
-}
-
-// Display error if any
-if (isset($error)) {
-    echo "<script>alert('$error'); window.location.href='login.php';</script>";
 }
 ?>
