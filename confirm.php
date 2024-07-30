@@ -25,12 +25,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (password_verify($password, $hashed_password)) {
         // Password is correct, generate OTP
-        $otp = rand(100000, 999999); // 6-digit OTP
+        $otp = generateOtp(); // Call the OTP generation function
         $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes')); // Set expiration time to 2 minutes
 
         // Store OTP and expiration in database
         $stmt = $conn->prepare("UPDATE user SET otp = ?, otp_expiration = ? WHERE id = ?");
-        $stmt->bind_param("isi", $otp, $otp_expiration, $user_id);
+        $stmt->bind_param("ssi", $otp, $otp_expiration, $user_id);
         $stmt->execute();
         $stmt->close();
 
@@ -53,5 +53,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $conn->close();
+}
+
+// Function to generate a random OTP with uppercase, lowercase, and numbers
+function generateOtp($length = 6) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $otp = '';
+    $max = strlen($characters) - 1;
+
+    for ($i = 0; $i < $length; $i++) {
+        $otp .= $characters[mt_rand(0, $max)];
+    }
+
+    return $otp;
 }
 ?>
