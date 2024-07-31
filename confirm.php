@@ -37,8 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'prasannasunuwar03@gmail.com'; // Your Gmail address
-            $mail->Password = 'qnsz peby oylh vvlq'; // Your Gmail App Password
+            $mail->Username = 'prasannasunuwar03@gmail.com'; 
+            $mail->Password = 'qnsz peby oylh vvlq';
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         }
     } else {
-        echo "Invalid email or password.";
+     echo "<script>alert('Invalid email or password.'); window.location.href='login.php';</script>";
     }
 
     $conn->close();
