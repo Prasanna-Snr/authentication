@@ -21,7 +21,7 @@
             ?>
             <div class="form-row">
                 <label for="otp">OTP Code</label>
-                <input type="text" id="otp" name="otp" placeholder="Enter OTP" required>
+                <input type="text" id="otp" name="otp" placeholder="Enter OTP">
             </div>
             <button type="submit" name="verify">Verify</button>
         </form>
@@ -45,11 +45,7 @@
                 header("Location: verify_otp.php");
                 exit();
             }
-        } else {
-            $_SESSION['otp_error'] = "No OTP found. Please request a new one.";
-            header("Location: verify_otp.php");
-            exit();
-        }
+        } 
     }
     ?>
 </body>
