@@ -104,16 +104,27 @@
 
     // Function to generate a random OTP with uppercase, lowercase, and numbers
     function generateOtp($length = 6) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $otp = '';
-        $max = strlen($characters) - 1;
-
-        for ($i = 0; $i < $length; $i++) {
-            $otp .= $characters[mt_rand(0, $max)];
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+    
+        // Ensure the OTP contains at least one character from each set
+        $otp = $uppercase[mt_rand(0, strlen($uppercase) - 1)] .
+               $lowercase[mt_rand(0, strlen($lowercase) - 1)] .
+               $numbers[mt_rand(0, strlen($numbers) - 1)];
+    
+        $all_characters = $uppercase . $lowercase . $numbers;
+        $max = strlen($all_characters) - 1;
+    
+        // Add remaining random characters
+        for ($i = 3; $i < $length; $i++) {
+            $otp .= $all_characters[mt_rand(0, $max)];
         }
-
-        return $otp;
+    
+        // Shuffle to avoid predictable patterns
+        return str_shuffle($otp);
     }
+    
     ?>
 </body>
 </html>
