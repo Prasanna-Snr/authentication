@@ -33,68 +33,73 @@
     <?php
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         $entered_otp = $_POST['otp'];
-        $email = $_SESSION['email']; // Retrieve the email from the session
-
-        // Create connection
-        $conn = new mysqli('localhost', 'root', '', 'authentication');
-
-        // Check connection
-        if ($conn->connect_error) {
-            die('Connection Failed: ' . $conn->connect_error);
-        }
-
-        // Fetch the OTP and expiration time from the database
-        $stmt = $conn->prepare("SELECT otp, otp_expiration FROM user WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->bind_result($otp, $otp_expiration);
-        $stmt->fetch();
-
         $current_time = date('Y-m-d H:i:s');
 
-        if ($otp === $entered_otp && $current_time <= $otp_expiration) {
-            // OTP is correct and not expired, log the user in
-            header("Location: dashboard.php");
-            exit();
+        if (isset($_SESSION['otp']) && isset($_SESSION['otp_expiration'])) {
+            $otp = $_SESSION['otp'];
+            $otp_expiration = $_SESSION['otp_expiration'];
+
+            if ($otp === $entered_otp && $current_time <= $otp_expiration) {
+                // OTP is correct and not expired, log the user in
+                header("Location: dashboard.php");
+                exit();
+            } else {
+                $_SESSION['otp_error'] = "Invalid or expired OTP.";
+                header("Location: verify_otp.php");
+                exit();
+            }
         } else {
-            $_SESSION['otp_error'] = "Invalid or expired OTP.";
+            $_SESSION['otp_error'] = "No OTP found. Please request a new one.";
             header("Location: verify_otp.php");
             exit();
         }
-
-        $stmt->close();
-        $conn->close();
     }
 
     // Handle OTP resend request
     if (isset($_GET['resend']) && $_GET['resend'] == 'true') {
-        $email = $_SESSION['email'];
-        $otp = generateOtp();
-        $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes'));
+        if (isset($_SESSION['email'])) {
+            $email = $_SESSION['email'];
+            $otp = generateOtp();
+            $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes'));
 
-        $conn = new mysqli('localhost', 'root', '', 'authentication');
+            // Send OTP via email using PHPMailer
+            require 'PHPMailer/src/Exception.php';
+            require 'PHPMailer/src/PHPMailer.php';
+            require 'PHPMailer/src/SMTP.php';
 
-        if ($conn->connect_error) {
-            die('Connection Failed: ' . $conn->connect_error);
+            $mail = new PHPMailer(true);
+
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com'; // Update this
+                $mail->SMTPAuth = true;
+                $mail->Username = 'prasannsunuwar03@gmail.com'; // Update this
+                $mail->Password = 'qnsz peby oylh vvlq'; // Update this
+                $mail->SMTPSecure = 'tls';
+                $mail->Port = 587;
+
+                $mail->setFrom('prasannasunuwar03@gmail.com', 'PandaTech');
+                $mail->addAddress($email);
+
+                $mail->isHTML(true);
+                $mail->Subject = 'Your OTP Code';
+                $mail->Body    = "Your new OTP code is <b>$otp</b>. It will expire in 2 minutes.";
+
+                $mail->send();
+
+                $_SESSION['otp'] = $otp;
+                $_SESSION['otp_expiration'] = $otp_expiration;
+                $_SESSION['otp_error'] = "A new OTP has been sent to your email.";
+                header("Location: verify_otp.php");
+                exit();
+            } catch (Exception $e) {
+                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            }
+        } else {
+            $_SESSION['otp_error'] = "No email found. Please request a new OTP.";
+            header("Location: verify_otp.php");
+            exit();
         }
-
-        $stmt = $conn->prepare("UPDATE user SET otp = ?, otp_expiration = ? WHERE email = ?");
-        $stmt->bind_param("sss", $otp, $otp_expiration, $email);
-        $stmt->execute();
-        $stmt->close();
-
-        $to = $email;
-        $subject = "Your OTP Code";
-        $message = "Your new OTP code is $otp. It will expire in 2 minutes.";
-        $headers = "From: no-reply@example.com";
-
-        mail($to, $subject, $message, $headers);
-
-        $_SESSION['otp_error'] = "A new OTP has been sent to your email.";
-        header("Location: verify_otp.php");
-        exit();
-
-        $conn->close();
     }
 
     // Function to generate a random OTP with uppercase, lowercase, and numbers

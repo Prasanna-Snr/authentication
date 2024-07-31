@@ -1,53 +1,61 @@
 <?php
 session_start();
+require 'PHPMailer-master/src/Exception.php';
+require 'PHPMailer-master/src/PHPMailer.php';
+require 'PHPMailer-master/src/SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Create connection
     $conn = new mysqli('localhost', 'root', '', 'authentication');
 
-    // Check connection
     if ($conn->connect_error) {
         die('Connection Failed: ' . $conn->connect_error);
     }
 
-    // Check if email and password are correct
     $stmt = $conn->prepare("SELECT id, password FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->bind_result($user_id, $hashed_password);
     $stmt->fetch();
-
-    // Close the statement
     $stmt->close();
 
     if (password_verify($password, $hashed_password)) {
-        // Password is correct, generate OTP
-        $otp = generateOtp(); // Call the OTP generation function
-        $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes')); // Set expiration time to 2 minutes
+        $otp = generateOtp();
+        $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes'));
 
-        // Store OTP and expiration in database
-        $stmt = $conn->prepare("UPDATE user SET otp = ?, otp_expiration = ? WHERE id = ?");
-        $stmt->bind_param("ssi", $otp, $otp_expiration, $user_id);
-        $stmt->execute();
-        $stmt->close();
+        $_SESSION['otp'] = $otp;
+        $_SESSION['otp_expiration'] = $otp_expiration;
 
-        // Send OTP via email
-        $to = $email;
-        $subject = "Your OTP Code";
-        $message = "Your OTP code is $otp. It will expire in 2 minutes.";
-        $headers = "From: no-reply@example.com";
+        $mail = new PHPMailer(true);
 
-        mail($to, $subject, $message, $headers);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'prasannasunuwar03@gmail.com';
+            $mail->Password = 'qnsz peby oylh vvlq';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
 
-        // Store email in session for verification
-        $_SESSION['email'] = $email;
+            $mail->setFrom('no-reply@example.com', 'Your App Name');
+            $mail->addAddress($email);
 
-        // Redirect to OTP verification page
-        header("Location: verify_otp.php");
-        exit();
+            $mail->isHTML(true);
+            $mail->Subject = 'Your OTP Code';
+            $mail->Body    = "Your OTP code is <b>$otp</b>. It will expire in 2 minutes.";
+
+            $mail->send();
+
+            header("Location: verify_otp.php");
+            exit();
+        } catch (Exception $e) {
+            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        }
     } else {
         echo "Invalid email or password.";
     }
@@ -55,7 +63,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 
-// Function to generate a random OTP with uppercase, lowercase, and numbers
 function generateOtp($length = 6) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $otp = '';
