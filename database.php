@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $check_email_query->store_result();
 
     if ($check_email_query->num_rows > 0) {
-        echo "Email already exists. Please use a different email.";
+        echo "<script>alert('Email already exists. Please use a different email.'); window.location.href='signUp.php';</script>";
     } else {
         // Insert new user
         $stmt = $conn->prepare("INSERT INTO user (first_name, middle_name, last_name, gender, dob, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
