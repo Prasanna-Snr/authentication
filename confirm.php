@@ -37,12 +37,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'prasannasunuwar03@gmail.com';
-            $mail->Password = 'qnsz peby oylh vvlq';
+            $mail->Username = 'prasannasunuwar03@gmail.com'; // Your Gmail address
+            $mail->Password = 'qnsz peby oylh vvlq'; // Your Gmail App Password
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
-            $mail->setFrom('no-reply@example.com', 'Your App Name');
+            // Set sender's email and name
+            $mail->setFrom('no-reply@example.com', 'PandaTech');
             $mail->addAddress($email);
 
             $mail->isHTML(true);
