@@ -24,9 +24,6 @@
                 <input type="text" id="otp" name="otp" placeholder="Enter OTP" required>
             </div>
             <button type="submit" name="verify">Verify</button>
-            <div class="resend-otp">
-                <a href="verify_otp.php?resend=true">Resend OTP</a>
-            </div>
         </form>
     </div>
 
@@ -54,77 +51,6 @@
             exit();
         }
     }
-
-    // Handle OTP resend request
-    if (isset($_GET['resend']) && $_GET['resend'] == 'true') {
-        if (isset($_SESSION['email'])) {
-            $email = $_SESSION['email'];
-            $otp = generateOtp();
-            $otp_expiration = date('Y-m-d H:i:s', strtotime('+2 minutes'));
-
-            // Send OTP via email using PHPMailer
-            require 'PHPMailer/src/Exception.php';
-            require 'PHPMailer/src/PHPMailer.php';
-            require 'PHPMailer/src/SMTP.php';
-
-            $mail = new PHPMailer(true);
-
-            try {
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com'; // Update this
-                $mail->SMTPAuth = true;
-                $mail->Username = 'prasannsunuwar03@gmail.com'; // Update this
-                $mail->Password = 'qnsz peby oylh vvlq'; // Update this
-                $mail->SMTPSecure = 'tls';
-                $mail->Port = 587;
-
-                $mail->setFrom('prasannasunuwar03@gmail.com', 'PandaTech');
-                $mail->addAddress($email);
-
-                $mail->isHTML(true);
-                $mail->Subject = 'Your OTP Code';
-                $mail->Body    = "Your new OTP code is <b>$otp</b>. It will expire in 2 minutes.";
-
-                $mail->send();
-
-                $_SESSION['otp'] = $otp;
-                $_SESSION['otp_expiration'] = $otp_expiration;
-                $_SESSION['otp_error'] = "A new OTP has been sent to your email.";
-                header("Location: verify_otp.php");
-                exit();
-            } catch (Exception $e) {
-                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-            }
-        } else {
-            $_SESSION['otp_error'] = "No email found. Please request a new OTP.";
-            header("Location: verify_otp.php");
-            exit();
-        }
-    }
-
-    // Function to generate a random OTP with uppercase, lowercase, and numbers
-    function generateOtp($length = 6) {
-        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
-        $numbers = '0123456789';
-    
-        // Ensure the OTP contains at least one character from each set
-        $otp = $uppercase[mt_rand(0, strlen($uppercase) - 1)] .
-               $lowercase[mt_rand(0, strlen($lowercase) - 1)] .
-               $numbers[mt_rand(0, strlen($numbers) - 1)];
-    
-        $all_characters = $uppercase . $lowercase . $numbers;
-        $max = strlen($all_characters) - 1;
-    
-        // Add remaining random characters
-        for ($i = 3; $i < $length; $i++) {
-            $otp .= $all_characters[mt_rand(0, $max)];
-        }
-    
-        // Shuffle to avoid predictable patterns
-        return str_shuffle($otp);
-    }
-    
     ?>
 </body>
 </html>
